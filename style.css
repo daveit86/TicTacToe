@@ -17,6 +17,7 @@ body{
     flex: 1 1 auto;
     align-items: center;
     justify-content: center;
+    user-select: none;
 }
 
 #players{
@@ -37,6 +38,7 @@ body{
 }
 
 .gamebox{
+    font-size: 5em;
     display: flex;
     align-items: center;
     justify-content: center;
