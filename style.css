@@ -38,10 +38,18 @@ body{
 }
 
 .gamebox{
-    font-size: 5em;
+    font-size: 0em;
     display: flex;
     align-items: center;
     justify-content: center;
+    transition: all 500ms;
+    animation-timing-function: cubic-bezier(0.41, 0.17, 0.93, 1.55);
+    
+}
+
+.clicked{
+    font-size: 5em;
+    animation-timing-function: cubic-bezier(0.41, 0.17, 0.93, 1.55);
 }
 
 .top-border{

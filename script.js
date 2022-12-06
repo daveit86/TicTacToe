@@ -10,19 +10,42 @@ const restartBtn = document.querySelector("button.restart");
 const Gameboard = () => {
     let turn = 0;
     let player = false;
-    let p1 = Player("Player 1","X");
-    let p2 = Player("Player 2", "O");
+    let players = [
+        Player("Player 1","X"),
+        Player("Player 2","O")
+    ]
+    const i2rc = (index) => [Math.floor(index / 3), index % 3];
+    const rc2i = (row,col) => 3 * row + col;
     const gameboard = document.querySelector("#gameboard");
     const gameboxes= new Array(9);
     const DOMboxes = document.querySelectorAll(".gamebox");
-    
+
+    const bindGameboardListener = () =>{
+        gameboard.addEventListener("click",gameListener)
+    }
+
+    const removeGameboardListener = () =>{
+        gameboard.removeEventListener("click",gameListener, false)
+    }
+
+    const gameListener = (e) => {
+        console.log(e.target.ariaLabel);
+        setBox(e.target.ariaLabel);
+    }
+
 
     const render = () => {
         console.log("Rendering gameboard");
         for(let i=0;i<gameboxes.length;i++)
         {
-            debuglog(`iteration ${i}`);
             DOMboxes[i].innerText=gameboxes[i];
+        }
+    }
+
+    const resetClicked = () => {
+        for(let i=0;i<gameboxes.length;i++)
+        {
+            DOMboxes[i].classList.remove("clicked");
         }
     }
 
@@ -34,22 +57,27 @@ const Gameboard = () => {
     };
 
     const resetGame = () => {
+        player=false;
+        turn=0;
         resetBoxes();
+        resetClicked();
         render();
+        bindGameboardListener();
+        players[0].resetTurn();
+        players[1].resetTurn();
     }
 
     const setBox = (index) => {
         debuglog(`index:${index}`);
         if(gameboxes[index]==="")
         {
-            if(player){
-                gameboxes[index] = p2.token;
-            }
-            else
-            {
-                gameboxes[index] = p1.token;
-            }
+            gameboxes[index] = players[player?1:0].token;
+            DOMboxes[index].classList.add("clicked");
             render();
+            debuglog(gameboxes);
+            debuglog(`turn:${turn}`);
+            checkWin(index,players[player?1:0]);
+            players[player?1:0].nextTurn();
             player=!player;
             turn++;
         }
@@ -60,20 +88,49 @@ const Gameboard = () => {
         
     }
 
-    const index2rowcol = (index) => [Math.floor(index / 3), index % 3];
-    const rowcol2index = (row,col) => 3 * row + col;
+    const checkWin = (index, player) => {
+        if(turn<9)
+        {   
+            let found = false;
+            let symbol = gameboxes[index];
+            let xy=i2rc(index);
+            if(
+                checkLine([0,1,2],symbol) ||
+                checkLine([3,4,5],symbol) ||
+                checkLine([6,7,8],symbol) ||
+                checkLine([0,3,6],symbol) ||
+                checkLine([1,4,7],symbol) ||
+                checkLine([2,5,8],symbol) ||
+                checkLine([0,4,8],symbol) ||
+                checkLine([2,4,6],symbol)
+            )
+            {
+                found = true;
+            }
 
-    const checkWin = () => {
-
+            if(found)
+            {
+                alert (`${player.getName()} won!`);
+                removeGameboardListener();
+            }
+        }
+        else
+        {
+            setTimeout(function() { alert('Game Over'); }, 1);
+            removeGameboardListener();
+            //resetGame();
+        }
     }
 
-    resetGame();
-    gameboard.addEventListener("click",(e)=>{
-        console.log(e.target.ariaLabel);
-        setBox(e.target.ariaLabel);
-    })
+    const checkLine = (line, val) => gameboxes[line[0]]===val && gameboxes[line[1]]===val && gameboxes[line[2]]===val
 
-    return {index2rowcol, rowcol2index ,setBox, render, resetBoxes};
+    resetGame();
+    restartBtn.addEventListener("click",resetGame);
+    
+
+    bindGameboardListener();
+
+    return {players, gameboxes ,setBox, render, resetBoxes};
 }
 
 //Player Class
@@ -86,7 +143,8 @@ const Player = (name, token) => {
     const nextTurn = () => {turn++; console.log(`${name} - Turn #${turn}`);};
     const resetTurn = () => {turn = 0; console.log(`${name} - Turn #${turn}`);};
     const getTurn = () => {return turn; console.log(`${name} - Turn #${turn}`);};
-    return {token, won, reset, getWins, nextTurn, resetTurn, getTurn};
+    const getName = () => name;
+    return {name, token, won, reset, getWins, nextTurn, resetTurn, getTurn, getName};
 }
 
 
